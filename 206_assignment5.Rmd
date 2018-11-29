@@ -30,3 +30,8 @@ enroll_graph <- ggplot(mf_grad, aes(color="Male", x=Year, y=`Total Male`)) +
 enroll_graph
 ```
 
+```{r}
+m_grad_lm<-lm(formula = Year ~ `Total Male`, data = mf_grad)
+summary(m_grad_lm)
+```
+
