@@ -22,3 +22,11 @@ phd_field<-read_csv("phd_field.csv")
 
 ```
 
+```{r}
+enroll_graph <- ggplot(mf_grad, aes(color="Male", x=Year, y=`Total Male`)) +
+  geom_line() +
+  geom_line(aes(color="Female", x=Year, y = `Total Female`))
+
+enroll_graph
+```
+
