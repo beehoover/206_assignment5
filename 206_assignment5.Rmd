@@ -1,0 +1,24 @@
+---
+title: "206 Assignment 5"
+author: "Barbara Rose Hoover"
+date: "11/28/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r library}
+library(tidyverse)
+library(stargazer)
+```
+```{r}
+faculty <- read_csv("Faculty.csv")
+mf_grad <- read_csv("mfgrad.csv")
+med_salary<-read_csv("salary.csv")
+phd_field<-read_csv("phd_field.csv")
+
+```
+
