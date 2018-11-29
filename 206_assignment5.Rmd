@@ -13,8 +13,11 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r library}
 library(tidyverse)
 library(stargazer)
+library(knitr)
+library(kableExtra)
+library(extrafont)
 ```
-```{r}
+```{r message=FALSE}
 faculty <- read_csv("Faculty.csv")
 mf_grad <- read_csv("mfgrad.csv")
 med_salary<-read_csv("salary.csv")
@@ -23,15 +26,73 @@ phd_field<-read_csv("phd_field.csv")
 ```
 
 ```{r}
-enroll_graph <- ggplot(mf_grad, aes(color="Male", x=Year, y=`Total Male`)) +
-  geom_line() +
+enroll_graph <- ggplot(mf_grad) +
+  geom_line(aes(color="Male", x=Year, y=`Total Male`)) +
   geom_line(aes(color="Female", x=Year, y = `Total Female`))
 
 enroll_graph
 ```
 
-```{r}
+
+```{r correlation coefficient}
+# CLoser to 1, the better 
+#Same as pearson's test
+cor(mf_grad$Year, mf_grad$`Total Male`)
+cor(mf_grad$Year, mf_grad$`Total Female`)
+
+#Numbers suggest linear releation between year and # of students (both genders) 
+```
+
+```{r linear model for male}
 m_grad_lm<-lm(formula = Year ~ `Total Male`, data = mf_grad)
 summary(m_grad_lm)
+```
+
+```{r, pearson's R, echo = FALSE}
+
+m_grad_pc<-cor.test(mf_grad$Year, mf_grad$`Total Male`)
+
+```
+
+```{r graph, fig.height = 4, fig.width = 6, echo = FALSE}
+
+predicted <- predict(m_grad_lm, interval = "confidence", level = 0.95)
+full_data <- data.frame(mf_grad, predicted)
+
+ggplot(full_data, aes(x = Year, y = Total.Male)) + 
+  geom_point() +
+  geom_line(aes(x = Year, y = fit)) +
+  geom_ribbon(aes(x = Year, ymin = lwr, ymax = upr), alpha = 0.3) +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(), 
+        axis.line = element_line(colour = "black"), 
+        text = element_text(family = "Times New Roman")) +
+  xlab("Year") +
+  ylab("Students Enrolled") +
+  annotate("text", 
+           x = 4.5, 
+           y = 4.3, 
+           label = "y = 9.422e-05x - 1.902e+03", 
+           family = "Times New Roman", 
+           size = 5) +
+  annotate("text", 
+           x = 4.5, 
+           y = 4.0, 
+           label = "italic(R)^2 == 0.85", 
+           parse = TRUE, 
+           family = "Times New Roman", 
+           size = 5)
+
+
+```
+\newline
+
+**Figure 1. Relationship between *Setosa* iris sepal length (cm) and width (cm).** *Setosa* sepal length significantly predicts sepal width (*b* = 0.79, t(48) = 7.6, *p* < 0.001) with a strong positive correlation between the two (Pearson's *r* = 0.74). The overall model explains a significant amount of variance in sepal width (F(1,48) = 59, *p* < 0.001, $R^2$ = 0.55). Gray region is the 95% confidence interval for the mean predicted value. 
+
+
+```{r linear model for female}
+f_grad_lm<-lm(formula = Year ~ `Total Female`, data = mf_grad)
+summary(f_grad_lm)
 ```
 
