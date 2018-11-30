@@ -25,8 +25,14 @@ phd_field<-read_csv("phd_field.csv")
 
 ```
 
+##Making Subset 
 ```{r}
-enroll_graph <- ggplot(mf_grad) +
+mf_grad_sub<-select(mf_grad, Year:`Total Female`)
+```
+
+
+```{r}
+enroll_graph <- ggplot(mf_grad_sub) +
   geom_line(aes(color="Male", x=Year, y=`Total Male`)) +
   geom_line(aes(color="Female", x=Year, y = `Total Female`))
 
@@ -35,32 +41,33 @@ enroll_graph
 
 
 ```{r correlation coefficient}
-# CLoser to 1, the better 
+# Closer to 1, the better 
 #Same as pearson's test
-cor(mf_grad$Year, mf_grad$`Total Male`)
-cor(mf_grad$Year, mf_grad$`Total Female`)
+cor(mf_grad_sub$`Total Male`, mf_grad_sub$Year)
+cor(mf_grad_sub$`Total Female`, mf_grad_sub$Year)
 
 #Numbers suggest linear releation between year and # of students (both genders) 
 ```
 
 ```{r linear model for male}
-m_grad_lm<-lm(formula = Year ~ `Total Male`, data = mf_grad)
+m_grad_lm<-lm(formula = `Total Male` ~ Year, data = mf_grad_sub)
 summary(m_grad_lm)
+
 ```
 
-```{r, pearson's R, echo = FALSE}
+```{r pearson, echo = FALSE}
 
-m_grad_pc<-cor.test(mf_grad$Year, mf_grad$`Total Male`)
+m_grad_pc<-cor.test(mf_grad_sub$Year, mf_grad_sub$`Total Male`)
 
 ```
 
 ```{r graph, fig.height = 4, fig.width = 6, echo = FALSE}
 
 predicted <- predict(m_grad_lm, interval = "confidence", level = 0.95)
-full_data <- data.frame(mf_grad, predicted)
+full_data <- data.frame(mf_grad_sub, predicted)
 
 ggplot(full_data, aes(x = Year, y = Total.Male)) + 
-  geom_point() +
+  geom_point(color="dodgerblue3") +
   geom_line(aes(x = Year, y = fit)) +
   geom_ribbon(aes(x = Year, ymin = lwr, ymax = upr), alpha = 0.3) +
   theme(panel.grid.major = element_blank(),
@@ -69,30 +76,69 @@ ggplot(full_data, aes(x = Year, y = Total.Male)) +
         axis.line = element_line(colour = "black"), 
         text = element_text(family = "Times New Roman")) +
   xlab("Year") +
-  ylab("Students Enrolled") +
+  ylab("Number of Male Graduates Enrolled") +
   annotate("text", 
-           x = 4.5, 
-           y = 4.3, 
-           label = "y = 9.422e-05x - 1.902e+03", 
+           x = 1980, 
+           y = 1500000, 
+           label = "y = 9069x -17112153", 
            family = "Times New Roman", 
            size = 5) +
   annotate("text", 
-           x = 4.5, 
-           y = 4.0, 
+           x = 1980, 
+           y = 1300000, 
            label = "italic(R)^2 == 0.85", 
            parse = TRUE, 
            family = "Times New Roman", 
-           size = 5)
-
-
+           size = 5)+
+  scale_y_continuous(labels = function(x) format(x, big.mark = ",", scientific = FALSE), limits = c(260000,1720000))
 ```
 \newline
 
-**Figure 1. Relationship between *Setosa* iris sepal length (cm) and width (cm).** *Setosa* sepal length significantly predicts sepal width (*b* = 0.79, t(48) = 7.6, *p* < 0.001) with a strong positive correlation between the two (Pearson's *r* = 0.74). The overall model explains a significant amount of variance in sepal width (F(1,48) = 59, *p* < 0.001, $R^2$ = 0.55). Gray region is the 95% confidence interval for the mean predicted value. 
+**Figure 1. Trends in male (left graph) and female (right graph) graduate enrollmet in the United States from 1967-2015. Actual numbers are indicated as dots. Solid line represents the linear model fit for each respective gender, with the shaded region representing the 95% confidence interval. 
 
 
 ```{r linear model for female}
-f_grad_lm<-lm(formula = Year ~ `Total Female`, data = mf_grad)
+f_grad_lm<-lm(formula = `Total Female` ~ Year, data = mf_grad_sub)
 summary(f_grad_lm)
+
 ```
 
+```{r, female pearsons R, echo = FALSE}
+
+f_grad_pc<-cor.test(mf_grad_sub$Year, mf_grad_sub$`Total Female`)
+f_grad_pc
+
+```
+
+```{r female graph, fig.height = 4, fig.width = 6, echo = FALSE}
+
+f_predicted <- predict(f_grad_lm, interval = "confidence", level = 0.95)
+f_full_data <- data.frame(mf_grad_sub, f_predicted)
+
+ggplot(f_full_data, aes(x = Year, y = Total.Female)) + 
+  geom_point(color="red") +
+  geom_line(aes(x = Year, y = fit)) +
+  geom_ribbon(aes(x = Year, ymin = lwr, ymax = upr), alpha = 0.3) +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(), 
+        axis.line = element_line(colour = "black"), 
+        text = element_text(family = "Times New Roman")) +
+  xlab("Year") +
+  ylab("Number of Female Graduates Enrolled") +
+  annotate("text", 
+           x = 1980, 
+           y = 1500000, 
+           label = "y = 30130x -58960000", 
+           family = "Times New Roman", 
+           size = 5) +
+  annotate("text", 
+           x = 1980, 
+           y = 1300000, 
+           label = "italic(R)^2 == 0.98", 
+           parse = TRUE, 
+           family = "Times New Roman", 
+           size = 5)+
+  scale_y_continuous(labels = function(x) format(x, big.mark = ",", scientific = FALSE), limits = c(260000,1720000))+
+  labs(caption = "Source: U.S. Department of Education")
+```
