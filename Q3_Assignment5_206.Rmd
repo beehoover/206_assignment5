@@ -30,3 +30,15 @@ wsr_salarypostdoc
 
 ```
 
+```{r}
+# Graphically show the differences in median salaries
+
+graphmediansalary <- ggplot(mediansalary, aes(x = `Field of study`, y = m_employment)) +
+  geom_bar()
+
+graphmediansalary
+
+# I don't know how to do this 
+```
+
+
