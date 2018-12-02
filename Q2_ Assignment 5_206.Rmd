@@ -53,7 +53,19 @@ f_phd_chi$stdres
 f_graph<-ggplot(phd_g, aes(Year, Percent, group=`Field of Study`, color =`Field of Study` )) +
   geom_line()+
   scale_x_continuous(breaks=seq(1985,2015,5), limits=c(1984, 2016))+
-  scale_y_continuous(limits=c(0, 100))
+  scale_y_continuous(limits=c(0, 100), breaks=seq(0,100,10))+
+  labs(title = "Doctorate awarded to women, by broad field of study: 1985-2015", x = "Year", y = "Percent (%)")+
+
+  theme(legend.position = c(0.2, 0.8),       
+      panel.grid.major.x = element_blank(),
+      panel.grid.major.y = element_line(colour = "grey"),
+      panel.grid.minor = element_blank(),
+      panel.grid.minor.x = element_blank(),
+      panel.grid.minor.y = element_blank(),
+      axis.line.x= element_blank(), 
+      panel.background = element_rect(fill = "white"),
+      legend.box.background = element_rect(colour = "grey"))
+
 f_graph
 
 ```
