@@ -1,0 +1,44 @@
+---
+title: "Q3_Assignment5_206"
+author: "Juan Silva"
+date: "11/29/2018"
+output: html_document
+---
+
+3) Male and female salaries for starting postdoctoral and other employment positions (2015). Compare median salaries for male and female doctorate recipients in 2015. Answer these two questions: Does median salary differ significantly between male and female starting postdoc positions? Does median salary differ significantly between male and female PhD recipients in non-postdoc employment positions?
+
+```{r setup, include=FALSE}
+
+library(tidyverse)
+
+mediansalary <- read_csv("mediansalary.csv")
+
+# Wilcoxon Signed-Rank
+# Null H: Ranks are equal
+# Alt H: Ranks are NOT equal
+
+
+wsr_salary <- wilcox.test(mediansalary$m_employment, mediansalary$f_employment, paired = TRUE)
+wsr_salary
+
+# There is a significant difference in median salaries between female and male in other employments (V = 101, p-value = 0.002572)
+
+wsr_salarypostdoc <- wilcox.test(mediansalary$m_postdoc_study, mediansalary$f_postdoc_study, paired = TRUE)
+wsr_salarypostdoc
+
+# There is no significant difference in median salaries between female and male in post doc positions (V = 19.5, p-value = 0.8884)
+
+```
+
+```{r}
+# Graphically show the differences in median salaries
+
+graphmediansalary <- ggplot(mediansalary, aes(x = `Field of study`, y = m_employment)) +
+  geom_bar()
+
+graphmediansalary
+
+# I don't know how to do this 
+```
+
+
