@@ -13,11 +13,12 @@ output: html_document
 
 library(tidyverse)
 library(stargazer)
+library(MASS)
 
 # sex, rank, years in current position, field, and number of years since doctoral degree was earned
 
 faculty <- read_csv("Faculty.csv")
-
+View(faculty)
 faculty <- rename(faculty, discipline = `Discipline (A = Theoretical, B = Applied)`, rank = `Faculty Rank`, yearsphd = `Years Since PhD`, yearsfac = `Years Faculty Service`, sex = Sex, salary = `Salary ($)`)
 
 
@@ -43,10 +44,41 @@ aic2 <- AIC(facultysalariesm2)
 
 # c. Alternative model without
 
+summary(facultysalariesm)$coefficient
 ```
 
 ```{r stargazer, results = 'asis'}
 
 stargazer(facultysalariesm, type = "html")
+```
+
+```{r}
+fit <- lm(salary ~ rank + discipline + yearsfac+rank:sex, data = faculty)
+summary(fit)
+fit2 <- lm(salary ~ rank + discipline + yearsfac+discipline:sex, data = faculty)
+fit3 <- lm(salary ~ rank + discipline + yearsfac+yearsfac:sex, data = faculty)
+summary(fit)
+summary(fit2)
+summary(fit3)
+step <- stepAIC(fit, direction="both")
+step$anova # display results
+
+library(GGally)
+ggpairs(faculty)
+
+library(corpcor)
+cor2pcor(cov(fit))
+
+library(ppcor)
+pcor(fit, method = "pearson")
+
+q<-ggplot(faculty,aes(x=sex, y=salary))+
+  geom_point()+
+  geom_boxplot()
+q
+```
+
+```{r}
+
 ```
 

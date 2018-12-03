@@ -22,7 +22,7 @@ faculty <- read_csv("Faculty.csv")
 mf_grad <- read_csv("mfgrad.csv")
 med_salary<-read_csv("salary.csv")
 phd_field<-read_csv("phd_field.csv")
-phd_g<-read_csv("PhDs .csv")
+phd_g<-read_csv("PhDs .csv") ##contains percent women (out of men and women) in the field 
 ```
 
 ```{r}
@@ -55,10 +55,9 @@ f_graph<-ggplot(phd_g, aes(Year, Percent, group=`Field of Study`, color =`Field 
   scale_x_continuous(breaks=seq(1985,2015,5), limits=c(1984, 2016))+
   scale_y_continuous(limits=c(0, 100), breaks=seq(0,100,10))+
   labs(title = "Doctorate awarded to women, by broad field of study: 1985-2015", x = "Year", y = "Percent (%)")+
-
   theme(legend.position = c(0.2, 0.8),       
       panel.grid.major.x = element_blank(),
-      panel.grid.major.y = element_line(colour = "grey"),
+      ##panel.grid.major.y = element_line(colour = "grey"),
       panel.grid.minor = element_blank(),
       panel.grid.minor.x = element_blank(),
       panel.grid.minor.y = element_blank(),
@@ -69,3 +68,23 @@ f_graph<-ggplot(phd_g, aes(Year, Percent, group=`Field of Study`, color =`Field 
 f_graph
 
 ```
+```{r}
+ggplot(f_phd_field, aes(x=Category, y=len, fill=supp)) +
+geom_bar(stat="identity", position=position_dodge())
+```
+
+```{r}
+matrix<-as.matrix(f_phd_field)
+f_phd_prop<-prop.table(matrix, 2)
+
+female_phd_graph <- ggplot(matrix, aes(x = Year)) +
+  geom_col(aes(y = Number, fill = Field), position = "dodge") +
+  scale_x_continuous(breaks = seq(1985, 2015, by = 15), expand = c(0, 0)) +
+  scale_y_continuous(lim = c(0, 5000), expand = c(0,0)) +
+  xlab("Year") +
+  ylab("Number of Students") +
+  ggtitle("Female PhD Recipients by Field") +
+  theme_classic()
+```
+
+
