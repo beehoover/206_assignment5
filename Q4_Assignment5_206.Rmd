@@ -41,6 +41,7 @@ anova(facultysalariesm, facultysalariesm2)
 
 aic1 <- AIC(facultysalariesm)
 aic2 <- AIC(facultysalariesm2)
+AIC(facultysalariesm, facultysalariesm2, exp3, exp6, exp7, exp8, exp9)
 
 # c. Alternative model without
 
@@ -52,10 +53,11 @@ summary(facultysalariesm)$coefficient
 stargazer(facultysalariesm, type = "html")
 ```
 
+#Further exploring 
 ```{r}
 fit <- lm(salary ~ rank + discipline + yearsfac+rank:sex, data = faculty)
 summary(fit)
-fit2 <- lm(salary ~ rank + discipline + yearsfac+discipline:sex, data = faculty)
+fit2 <- lm(salary ~ rank + yearsfac+discipline:sex, data = faculty)
 fit3 <- lm(salary ~ rank + discipline + yearsfac+yearsfac:sex, data = faculty)
 summary(fit)
 summary(fit2)
@@ -63,14 +65,7 @@ summary(fit3)
 step <- stepAIC(fit, direction="both")
 step$anova # display results
 
-library(GGally)
-ggpairs(faculty)
 
-library(corpcor)
-cor2pcor(cov(fit))
-
-library(ppcor)
-pcor(fit, method = "pearson")
 
 q<-ggplot(faculty,aes(x=sex, y=salary))+
   geom_point()+
@@ -79,6 +74,107 @@ q
 ```
 
 ```{r}
+head(faculty)
+cor(faculty$salary, faculty$yearsphd)
+plot(faculty$yearsphd[faculty$sex=="Male"], faculty$salary[faculty$sex=="Male"], col = 'blue')
+points(faculty$yearsphd[faculty$sex=="Female"], faculty$salary[faculty$sex=="Female"], col = 'red')
+abline(a=101428.7, b=747.6, col = 'blue')
+abline(a=92356.9, b=747.6, col = 'red')
 
+exp <- lm(salary ~ yearsfac+sex, data = faculty)
+summary(exp)
+```
+```{r}
+remove.packages(MASS) 
+library(dplyr)
+faculty1<-faculty %>% 
+  mutate(rank1=factor(faculty$rank))%>%
+  mutate(sex1=factor(faculty$sex)) %>% 
+  mutate(discipline1=factor(faculty$discipline)) %>% 
+  dplyr::select(yearsphd:discipline1) %>% 
+  dplyr::select(-sex)
+ 
+names(faculty1)
+exp2<-lm(salary~ yearsphd + yearsfac+ rank1 + sex1 + discipline1, data = faculty1)
+summary(exp2)
+
+```
+```{r}
+plt<-ggplot(faculty1, aes(y=salary, x=yearsphd, group=sex1))+
+  geom_point()+
+  geom_smooth(method = "lm", se = FALSE, aes(color=sex1))
+plt
+```
+
+
+
+```{r}
+
+plt2<-ggplot(faculty1, group=discipline1)+
+  geom_point(aes(x=discipline1, y=salary, color=rank1, shape=sex1), position=position_dodge(width = .5))
+plt2
+##Appears like only men who are professors are paid higher in the ranks 
+```
+
+```{r}
+exp3<-lm(salary~ discipline1+rank1 + yearsphd+sex1+sex1:yearsphd, data = faculty1)
+summary(exp3)
+
+exp6<-lm(salary~ discipline1+rank1 + sex1, data = faculty1)
+summary(exp6)
+
+exp7<-lm(salary~ discipline1+rank1, data = faculty1)
+summary(exp7)
+
+exp8<-lm(salary~ discipline1+sex1+yearsphd, data = faculty1)
+summary(exp8)
+
+exp9<-lm(salary~ discipline1+sex1, data = faculty1)
+summary(exp9)
+```
+
+```{r}
+t.test(faculty1$salary~faculty1$sex1)
+```
+
+```{r}
+t.test(faculty1$salary~faculty1$discipline1)
+```
+
+```{r}
+anova<-aov(salary ~ rank1, data = faculty1)
+summary(anova)
+TukeyHSD(anova)
+plot(anova, 1)
+
+one.anova<-oneway.test(salary ~ rank1, data = faculty1)
+summary(one.anova)
+```
+
+#Are variables gender dependent 
+```{r rank}
+#Rank is not independent of gender. This is something to consider. 
+t.rank<-table(faculty1$sex1, faculty1$rank1)
+ct<-chisq.test(t.rank)
+ct$expected
+ct$observed
+ct$stdres
+ct ##p-value = 0.01408
+```
+
+
+```{r discipline}
+
+##Independent of gender 
+t.dis<-table(faculty1$sex1, faculty1$discipline1)
+chisq.test(t.dis)
+dt$expected
+dt$observed
+dt$stdres ##p=1
+```
+
+```{r}
+##years fac vs. years phd
+cor(faculty1$yearsphd, faculty1$yearsfac)
 ```
 

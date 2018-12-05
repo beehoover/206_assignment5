@@ -1,0 +1,140 @@
+---
+title: "206 A5 Q4"
+author: "Barbara Rose Hoover"
+date: "12/4/2018"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r loading packages}
+library(tidyverse)
+library(stargazer)
+library(MASS)
+```
+
+
+```{r preparing data}
+faculty <- read_csv("Faculty.csv")
+
+faculty <- rename(faculty, discipline = `Discipline (A = Theoretical, B = Applied)`, rank = `Faculty Rank`, yearsphd = `Years Since PhD`, yearsfac = `Years Faculty Service`, sex = Sex, salary = `Salary ($)`)
+```
+
+
+Linear Model 
+```{r}
+salary_lm <- lm(salary ~ rank + discipline + yearsphd + yearsfac + sex, data = faculty)
+summary(salary_lm)
+#p-value for sex 0.21584
+```
+
+```{r exclude yearsfac and yearsphd and gender}
+salary5_lm<-lm(salary ~ rank + discipline, data = faculty)
+summary(salary5_lm)
+AIC(salary5_lm)
+```
+
+
+```{r exclude yearsfac and yearsphd}
+salary2_lm<-lm(salary ~ rank + discipline + sex, data = faculty)
+summary(salary2_lm)
+```
+####This explains 44% (0.4407) of the variation seen in salary. 
+###Years since receiving PhD and Years on faculty were found to be colinear, with a correlation coefficient of 0.9096491. 
+###Yearsfac has a negative coefficient, indicating that as years spent as faculty increases, salary decreases. This is not logical, and was omitted from the final lm. 
+###Rank appeared to be closely tied to Yearsphd and Yearsfac. When lm were run ony including rank, yearsphd, yearsfac, the adjusted R^2 were 0.4469, 0.2447, 0.1646 respectively. 
+###lm was run for a version including both rank and yearsphd, and one for only including rank. Resulting adjusted R^2 was 0.4401, 0.4412 and the AIC was 9097.22, 9095.454 respectively. Seeing as adjusted R^2 was not improved with the additional variable, yearsphd was dropped from the final model. 
+###Although the p-value for gender was not significant in the final model (p=0.245291), gender was included because gender accounts for a $4492 difference in salary. This fact is significant because this means that with all other variables constant, females will be paid $4492 less then men. 
+
+```{r exclude yearsfac}
+salary3_lm<-lm(salary ~ rank + discipline + yearsphd + sex, data = faculty)
+summary(salary3_lm)
+```
+
+```{r exclude yearsphd}
+salary4_lm<-lm(salary ~ rank + discipline + yearsfac + sex, data = faculty)
+summary(salary4_lm)
+#negative coefficient for yearsfac. Does not make sense 
+```
+
+```{r aic}
+AIC(salary_lm) #9093.826, 0.4547, 0.4463
+AIC(salary2_lm) #9095.454, 0.4469, 0.4412 <-choose this one 
+AIC(salary3_lm) #9097.22, 0.4472, 0.4401
+AIC(salary4_lm) #9096.813, 0.4478, 0.4407 
+AIC(salary5_lm) #9094.823, 0.445, 0.4407 <- Possibly compare. Model excludes gender
+```
+
+
+```{r model_table, results = 'asis'}
+stargazer(salary2_lm, type="html",
+          title = "Iris regression results.")
+
+```
+
+###Exploring rank, yearsfac, yearsphd
+```{r}
+rank_lm<-lm(salary ~ rank + discipline  + sex, data = faculty)
+summary(rank_lm)
+```
+
+```{r}
+rank_lm2<-lm(salary ~ yearsfac + discipline  + sex, data = faculty)
+summary(rank_lm2)
+```
+
+```{r}
+rank_lm3<-lm(salary ~ yearsphd + discipline  + sex, data = faculty)
+summary(rank_lm3)
+```
+
+#Data Exploration 
+
+```{r salary in yearsphd comparing gender}
+plt<-ggplot(faculty, aes(y=salary, x=yearsphd, group=sex))+
+  geom_point()+
+  geom_smooth(method = "lm", se = FALSE, aes(color=sex))
+plt
+```
+
+```{r salary by rank and gender}
+plt2<-ggplot(faculty, group=discipline)+
+  geom_point(aes(x=discipline, y=salary, color=rank, shape=sex), position=position_dodge(width = .5))
+plt2
+```
+
+#Exploring dependence 
+```{r rank}
+#Rank is not independent of gender. This is something to consider. 
+t.rank<-table(faculty$sex, faculty$rank)
+ct<-chisq.test(t.rank)
+ct$expected
+ct$observed
+ct$stdres
+ct ##p-value = 0.01408
+
+```
+
+```{r yearsphd and yearsfac cor}
+##years fac vs. years phd
+cor(faculty$yearsphd, faculty$yearsfac) 
+#0.9096491
+```
+
+
+```{r salary by rank and yearsphd}
+plt4<-ggplot(faculty, group=rank)+
+  geom_point(aes(x=yearsphd, y=salary, color=rank), position=position_dodge(width = .5))
+plt4
+```
+
+```{r salary by rank and yearsfac}
+plt5<-ggplot(faculty, group=rank)+
+  geom_point(aes(x=yearsfac, y=salary, color=rank), position=position_dodge(width = .5))
+plt5
+```
